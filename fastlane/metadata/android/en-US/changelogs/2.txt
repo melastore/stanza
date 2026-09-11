@@ -1,0 +1,2 @@
+Recent sessions in Stats show "Short break" instead of SHORT_BREAK STANZA.
+The tab bar no longer sits under the navigation buttons on phones with 3-button navigation.

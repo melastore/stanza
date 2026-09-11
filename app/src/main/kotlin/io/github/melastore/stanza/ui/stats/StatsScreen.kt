@@ -29,6 +29,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import dev.chrisbanes.haze.HazeState
 import io.github.melastore.stanza.data.db.SessionRecord
+import io.github.melastore.stanza.domain.Phase
 import io.github.melastore.stanza.ui.glass.GlassSurface
 import io.github.melastore.stanza.ui.glass.GlassVariant
 import io.github.melastore.stanza.ui.theme.LocalPalette
@@ -191,7 +192,7 @@ private fun AnnualHeatmapView(heatmap: Map<String, Int>) {
 	val today = LocalDate.now(zone)
 	val formatter = DateTimeFormatter.ISO_LOCAL_DATE
 
-	// 26 weeks visible, scrolls back to 52
+	// Starts scrolled to the newest week
 	val totalWeeks = 30
 	val startDate = today.minusWeeks(totalWeeks.toLong()).minusDays(today.dayOfWeek.value.toLong() - 1)
 
@@ -251,7 +252,11 @@ private fun RecentSessionRow(session: SessionRecord, hazeState: HazeState, reduc
 		) {
 			Column {
 				Text(
-					text = "${session.phase.name} STANZA",
+					text = when (session.phase) {
+						Phase.SHORT_BREAK -> "Short break"
+						Phase.LONG_BREAK -> "Long break"
+						else -> "Focus stanza"
+					},
 					fontSize = 14.sp,
 					fontWeight = FontWeight.Medium,
 					color = Color.White,
