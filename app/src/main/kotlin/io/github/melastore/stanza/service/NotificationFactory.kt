@@ -85,7 +85,6 @@ object NotificationFactory {
 				.setContentText("Ready")
 		}
 
-		// Common action buttons: +5m, Skip, Stop
 		builder
 			.addAction(
 				0,

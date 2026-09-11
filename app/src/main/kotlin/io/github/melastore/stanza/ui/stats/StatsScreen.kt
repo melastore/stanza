@@ -31,8 +31,7 @@ import dev.chrisbanes.haze.HazeState
 import io.github.melastore.stanza.data.db.SessionRecord
 import io.github.melastore.stanza.ui.glass.GlassSurface
 import io.github.melastore.stanza.ui.glass.GlassVariant
-import io.github.melastore.stanza.ui.theme.FocusPrimary
-import io.github.melastore.stanza.ui.theme.FocusSecondary
+import io.github.melastore.stanza.ui.theme.LocalPalette
 import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneId
@@ -66,7 +65,6 @@ fun StatsScreen(
 			)
 		}
 
-		// High-level Metrics Row
 		item {
 			Row(
 				modifier = Modifier.fillMaxWidth(),
@@ -96,7 +94,6 @@ fun StatsScreen(
 			}
 		}
 
-		// GitHub-style Annual Focus Heatmap
 		item {
 			GlassSurface(
 				hazeState = hazeState,
@@ -119,7 +116,6 @@ fun StatsScreen(
 			}
 		}
 
-		// Recent Sessions Header
 		item {
 			Text(
 				text = "Recent Stanzas",
@@ -158,6 +154,7 @@ private fun MetricCard(
 	reduceTransparency: Boolean,
 	modifier: Modifier = Modifier,
 ) {
+	val palette = LocalPalette.current
 	GlassSurface(
 		hazeState = hazeState,
 		reduceTransparency = reduceTransparency,
@@ -180,7 +177,7 @@ private fun MetricCard(
 				text = value,
 				fontSize = 22.sp,
 				fontWeight = FontWeight.SemiBold,
-				color = FocusPrimary,
+				color = palette.focusPrimary,
 			)
 		}
 	}
@@ -188,12 +185,13 @@ private fun MetricCard(
 
 @Composable
 private fun AnnualHeatmapView(heatmap: Map<String, Int>) {
+	val palette = LocalPalette.current
 	val scrollState = rememberScrollState(Int.MAX_VALUE)
 	val zone = ZoneId.systemDefault()
 	val today = LocalDate.now(zone)
 	val formatter = DateTimeFormatter.ISO_LOCAL_DATE
 
-	// Display last 26 weeks (~6 months) horizontally scrollable up to 52 weeks
+	// 26 weeks visible, scrolls back to 52
 	val totalWeeks = 30
 	val startDate = today.minusWeeks(totalWeeks.toLong()).minusDays(today.dayOfWeek.value.toLong() - 1)
 
@@ -213,9 +211,9 @@ private fun AnnualHeatmapView(heatmap: Map<String, Int>) {
 					val cellColor = when {
 						date.isAfter(today) -> Color.Transparent
 						minutes == 0 -> Color.White.copy(alpha = 0.05f)
-						minutes < 30 -> FocusSecondary.copy(alpha = 0.45f)
-						minutes < 60 -> FocusPrimary.copy(alpha = 0.75f)
-						else -> FocusPrimary
+						minutes < 30 -> palette.focusSecondary.copy(alpha = 0.45f)
+						minutes < 60 -> palette.focusPrimary.copy(alpha = 0.75f)
+						else -> palette.focusPrimary
 					}
 
 					Box(
@@ -232,6 +230,7 @@ private fun AnnualHeatmapView(heatmap: Map<String, Int>) {
 
 @Composable
 private fun RecentSessionRow(session: SessionRecord, hazeState: HazeState, reduceTransparency: Boolean,) {
+	val palette = LocalPalette.current
 	val zone = ZoneId.systemDefault()
 	val timeStr = DateTimeFormatter.ofPattern("MMM dd, HH:mm")
 		.format(Instant.ofEpochMilli(session.timestamp).atZone(zone))
@@ -267,7 +266,7 @@ private fun RecentSessionRow(session: SessionRecord, hazeState: HazeState, reduc
 				text = "+${session.durationMinutes}m",
 				fontSize = 15.sp,
 				fontWeight = FontWeight.SemiBold,
-				color = FocusPrimary,
+				color = palette.focusPrimary,
 			)
 		}
 	}

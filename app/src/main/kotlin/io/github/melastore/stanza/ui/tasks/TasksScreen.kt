@@ -47,7 +47,7 @@ import dev.chrisbanes.haze.HazeState
 import io.github.melastore.stanza.data.db.TaskRecord
 import io.github.melastore.stanza.ui.glass.GlassSurface
 import io.github.melastore.stanza.ui.glass.GlassVariant
-import io.github.melastore.stanza.ui.theme.FocusPrimary
+import io.github.melastore.stanza.ui.theme.LocalPalette
 
 @Composable
 fun TasksScreen(
@@ -159,6 +159,7 @@ private fun TaskRow(
 	onToggleComplete: (Boolean) -> Unit,
 	onDelete: () -> Unit,
 ) {
+	val palette = LocalPalette.current
 	GlassSurface(
 		hazeState = hazeState,
 		reduceTransparency = reduceTransparency,
@@ -179,7 +180,7 @@ private fun TaskRow(
 				checked = task.isCompleted,
 				onCheckedChange = { onToggleComplete(it) },
 				colors = CheckboxDefaults.colors(
-					checkedColor = FocusPrimary,
+					checkedColor = palette.focusPrimary,
 					uncheckedColor = Color.White.copy(alpha = 0.4f),
 				),
 			)
@@ -200,7 +201,7 @@ private fun TaskRow(
 				Text(
 					text = "${task.completedPomodoros}/${task.estimatedPomodoros} stanzas${if (isCurrent) " • ACTIVE" else ""}",
 					fontSize = 12.sp,
-					color = if (isCurrent) FocusPrimary else Color.White.copy(alpha = 0.5f),
+					color = if (isCurrent) palette.focusPrimary else Color.White.copy(alpha = 0.5f),
 					fontWeight = if (isCurrent) FontWeight.SemiBold else FontWeight.Normal,
 				)
 			}
@@ -219,6 +220,7 @@ private fun TaskRow(
 
 @Composable
 private fun CreateTaskDialog(onDismiss: () -> Unit, onConfirm: (String, Int) -> Unit,) {
+	val palette = LocalPalette.current
 	var title by remember { mutableStateOf("") }
 	var estimated by remember { mutableIntStateOf(2) }
 
@@ -250,7 +252,7 @@ private fun CreateTaskDialog(onDismiss: () -> Unit, onConfirm: (String, Int) -> 
 							Text(
 								text = i.toString(),
 								fontWeight = if (estimated == i) FontWeight.Bold else FontWeight.Normal,
-								color = if (estimated == i) FocusPrimary else Color.White.copy(alpha = 0.6f),
+								color = if (estimated == i) palette.focusPrimary else Color.White.copy(alpha = 0.6f),
 							)
 						}
 					}
@@ -265,7 +267,7 @@ private fun CreateTaskDialog(onDismiss: () -> Unit, onConfirm: (String, Int) -> 
 					}
 				},
 			) {
-				Text("Create", color = FocusPrimary)
+				Text("Create", color = palette.focusPrimary)
 			}
 		},
 		dismissButton = {

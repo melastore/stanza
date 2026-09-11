@@ -1,11 +1,6 @@
 package io.github.melastore.stanza.domain
 
-/**
- * Pure state machine reducer for Stanza.
- *
- * It contains zero Android framework imports and operates exclusively with pure functions,
- * ensuring complete deterministic testability with a mock or fake [Clock].
- */
+// No Android imports here, keeps it testable on the JVM.
 object TimerEngine {
 
 	fun reduce(state: TimerState, intent: TimerIntent, config: TimerConfig, clock: Clock,): TimerTransition =
@@ -75,6 +70,7 @@ object TimerEngine {
 		)
 		val effects = listOf(
 			TimerSideEffect.ArmAlarm(endsAtWallClock),
+			TimerSideEffect.StartForegroundService,
 			TimerSideEffect.UpdateNotification,
 		)
 		return TimerTransition(nextState, effects)
@@ -166,10 +162,10 @@ object TimerEngine {
 
 		val nowWall = clock.currentTimeMillis()
 		return if (nowWall >= state.endsAtWallClock) {
-			// Session expired while device was powered off
+			// Ended while the phone was off
 			handlePhaseCompleted(state, config, clock)
 		} else {
-			// Session is still active; re-anchor elapsedRealtime and re-arm exact alarm
+			// Still running, elapsedRealtime reset on boot so re-anchor it
 			val remainingMs = state.endsAtWallClock - nowWall
 			val restoredEndsRealtime = clock.elapsedRealtime() + remainingMs
 			val nextState = state.copy(endsAtRealtime = restoredEndsRealtime)

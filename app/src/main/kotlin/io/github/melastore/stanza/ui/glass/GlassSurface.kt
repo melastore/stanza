@@ -18,7 +18,7 @@ import io.github.melastore.stanza.ui.theme.GlassBorderBottomRight
 import io.github.melastore.stanza.ui.theme.GlassBorderTopLeft
 import io.github.melastore.stanza.ui.theme.GlassControlFill
 import io.github.melastore.stanza.ui.theme.GlassSurfaceFill
-import io.github.melastore.stanza.ui.theme.SurfaceDarkElevated
+import io.github.melastore.stanza.ui.theme.LocalPalette
 
 enum class GlassVariant {
 	CARD,
@@ -36,12 +36,10 @@ fun GlassSurface(
 	borderWidth: Dp = 1.dp,
 	content: @Composable () -> Unit,
 ) {
+	val palette = LocalPalette.current
 	val fill = when (variant) {
 		GlassVariant.CARD -> GlassSurfaceFill
-
 		GlassVariant.RAISED -> Color(0x1FFFFFFF)
-
-		// ~12%
 		GlassVariant.CONTROL -> GlassControlFill
 	}
 
@@ -56,7 +54,7 @@ fun GlassSurface(
 	}
 
 	val backgroundModifier = if (reduceTransparency) {
-		Modifier.background(SurfaceDarkElevated, shape)
+		Modifier.background(palette.surfaceElevated, shape)
 	} else if (hazeState != null) {
 		Modifier
 			.hazeEffect(state = hazeState)

@@ -1,4 +1,12 @@
+import java.util.Properties
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+
+val keystorePropertiesFile = rootProject.file("keystore.properties")
+val keystoreProperties = Properties().apply {
+	if (keystorePropertiesFile.isFile) {
+		keystorePropertiesFile.inputStream().use(::load)
+	}
+}
 
 plugins {
 	alias(libs.plugins.android.application)
@@ -25,8 +33,22 @@ android {
 		testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 	}
 
+	if (keystorePropertiesFile.isFile) {
+		signingConfigs {
+			create("release") {
+				storeFile = rootProject.file(keystoreProperties.required("storeFile"))
+				storePassword = keystoreProperties.required("storePassword")
+				keyAlias = keystoreProperties.required("keyAlias")
+				keyPassword = keystoreProperties.required("keyPassword")
+			}
+		}
+	}
+
 	buildTypes {
 		release {
+			signingConfigs.findByName("release")?.let { signingConfig = it }
+			// AGP otherwise writes the git HEAD into the APK, which makes the bytes depend on the
+			// checked-out commit and breaks reproducible-build verification.
 			vcsInfo { include = false }
 			isMinifyEnabled = true
 			isShrinkResources = true
@@ -96,3 +118,6 @@ dependencies {
 	testImplementation(libs.robolectric.android)
 	testImplementation(libs.androidx.test.ext.junit)
 }
+
+fun Properties.required(name: String): String = getProperty(name)?.takeIf { it.isNotBlank() }
+	?: error("keystore.properties is missing a value for '$name'")

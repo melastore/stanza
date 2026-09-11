@@ -21,18 +21,12 @@ data class TimerState(
 	val isIdle: Boolean
 		get() = phase == Phase.IDLE
 
-	/**
-	 * Computes remaining time in milliseconds given the current [nowRealtime].
-	 */
 	fun remainingMs(nowRealtime: Long): Long = when {
 		phase == Phase.IDLE -> 0L
 		pausedRemainingMs != null -> pausedRemainingMs
 		else -> maxOf(0L, endsAtRealtime - nowRealtime)
 	}
 
-	/**
-	 * Progress fraction from 0.0f (start) to 1.0f (completed).
-	 */
 	fun progress(nowRealtime: Long): Float {
 		if (phase == Phase.IDLE || totalDurationMs <= 0L) return 0f
 		val remaining = remainingMs(nowRealtime)

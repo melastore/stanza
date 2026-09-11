@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.BarChart
@@ -38,6 +39,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import dev.chrisbanes.haze.HazeState
@@ -46,18 +48,24 @@ import io.github.melastore.stanza.StanzaApp
 import io.github.melastore.stanza.data.datastore.UserPreferences
 import io.github.melastore.stanza.data.db.SessionRecord
 import io.github.melastore.stanza.data.db.TaskRecord
+import io.github.melastore.stanza.domain.ProgressStyle
 import io.github.melastore.stanza.domain.TimerIntent
 import io.github.melastore.stanza.domain.TimerState
 import io.github.melastore.stanza.ui.glass.GlassSurface
 import io.github.melastore.stanza.ui.glass.GlassVariant
 import io.github.melastore.stanza.ui.glass.MeshGradientBackdrop
 import io.github.melastore.stanza.ui.glass.NoiseGrainOverlay
+import io.github.melastore.stanza.ui.glass.PerimeterProgress
+import io.github.melastore.stanza.ui.permissions.PermissionSheet
+import io.github.melastore.stanza.ui.permissions.rememberPermissionStatus
 import io.github.melastore.stanza.ui.settings.SettingsScreen
 import io.github.melastore.stanza.ui.stats.StatsScreen
 import io.github.melastore.stanza.ui.tasks.TasksScreen
-import io.github.melastore.stanza.ui.theme.FocusPrimary
+import io.github.melastore.stanza.ui.theme.LocalPalette
 import io.github.melastore.stanza.ui.theme.StanzaTheme
+import io.github.melastore.stanza.ui.theme.paletteFor
 import io.github.melastore.stanza.ui.timer.TimerScreen
+import io.github.melastore.stanza.ui.timer.rememberRealtimeTicker
 import kotlinx.coroutines.launch
 
 enum class ScreenTab {
@@ -77,12 +85,12 @@ class MainActivity : ComponentActivity() {
 		val container = app.container
 
 		setContent {
-			StanzaTheme {
-				val timerState by container.stateStore.state.collectAsState()
-				val userPrefs by container.settingsStore.preferences.collectAsState(initial = UserPreferences())
+			val timerState by container.stateStore.state.collectAsState()
+			val userPrefs by container.settingsStore.preferences.collectAsState(initial = UserPreferences())
+
+			StanzaTheme(palette = paletteFor(userPrefs.themeId, userPrefs.customHue)) {
 				val tasks by container.taskRepository.tasks.collectAsState(initial = emptyList())
 
-				// Handle keep screen on flag
 				LaunchedEffect(timerState.isRunning, userPrefs.keepScreenOn) {
 					if (timerState.isRunning && userPrefs.keepScreenOn) {
 						window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
@@ -108,11 +116,14 @@ fun StanzaMainApp(timerState: TimerState, userPrefs: UserPreferences, tasks: Lis
 	var currentTab by remember { mutableStateOf(ScreenTab.TIMER) }
 	val scope = rememberCoroutineScope()
 
+	val palette = LocalPalette.current
+	val nowRealtime = rememberRealtimeTicker(timerState.isRunning)
+	val permissions = rememberPermissionStatus()
+
 	val activeTask = remember(tasks, timerState.currentTaskId) {
 		tasks.firstOrNull { it.id == timerState.currentTaskId }
 	}
 
-	// Stats metrics state
 	var todayMinutes by remember { mutableIntStateOf(0) }
 	var weekMinutes by remember { mutableIntStateOf(0) }
 	var streakDays by remember { mutableIntStateOf(0) }
@@ -130,7 +141,6 @@ fun StanzaMainApp(timerState: TimerState, userPrefs: UserPreferences, tasks: Lis
 	}
 
 	Box(modifier = Modifier.fillMaxSize()) {
-		// Layer 1 & 2: Mesh gradient background + Haze blur source
 		MeshGradientBackdrop(
 			phase = timerState.phase,
 			modifier = Modifier
@@ -138,10 +148,14 @@ fun StanzaMainApp(timerState: TimerState, userPrefs: UserPreferences, tasks: Lis
 				.hazeSource(state = hazeState),
 		)
 
-		// Layer 4: OLED Dither Noise Grain Overlay
 		NoiseGrainOverlay()
 
-		// Foreground Screens
+		PerimeterProgress(
+			progress = timerState.progress(nowRealtime),
+			accent = palette.primaryFor(timerState.phase.isBreak),
+			visible = !timerState.isIdle && userPrefs.layout.progress == ProgressStyle.PERIMETER,
+		)
+
 		Scaffold(
 			containerColor = Color.Transparent,
 			bottomBar = {
@@ -164,9 +178,12 @@ fun StanzaMainApp(timerState: TimerState, userPrefs: UserPreferences, tasks: Lis
 					ScreenTab.TIMER -> TimerScreen(
 						state = timerState,
 						config = userPrefs.config,
+						layout = userPrefs.layout,
 						activeTask = activeTask,
+						nowRealtime = nowRealtime,
 						hazeState = hazeState,
 						reduceTransparency = userPrefs.reduceTransparency,
+						hapticsEnabled = userPrefs.vibrationEnabled,
 						onDispatch = { app.container.timerController.dispatch(it) },
 						onSelectTaskClicked = { currentTab = ScreenTab.TASKS },
 					)
@@ -205,6 +222,9 @@ fun StanzaMainApp(timerState: TimerState, userPrefs: UserPreferences, tasks: Lis
 					ScreenTab.SETTINGS -> SettingsScreen(
 						preferences = userPrefs,
 						hazeState = hazeState,
+						onSelectTheme = { scope.launch { app.container.settingsStore.setThemeId(it) } },
+						onUpdateLayout = { scope.launch { app.container.settingsStore.setLayout(it) } },
+						onUpdateCustomHue = { scope.launch { app.container.settingsStore.setCustomHue(it) } },
 						onUpdateFocusMinutes = {
 							scope.launch { app.container.settingsStore.updateFocusMinutes(it) }
 						},
@@ -239,6 +259,16 @@ fun StanzaMainApp(timerState: TimerState, userPrefs: UserPreferences, tasks: Lis
 				}
 			}
 		}
+
+		// Also shown again if notification permission gets revoked, the timer is useless without it.
+		if (!userPrefs.permissionPromptSeen || permissions.missingRequired) {
+			PermissionSheet(
+				status = permissions,
+				hazeState = hazeState,
+				reduceTransparency = userPrefs.reduceTransparency,
+				onDismiss = { scope.launch { app.container.settingsStore.setPermissionPromptSeen() } },
+			)
+		}
 	}
 }
 
@@ -260,7 +290,9 @@ fun FloatingGlassNavBar(
 			reduceTransparency = reduceTransparency,
 			variant = GlassVariant.RAISED,
 			shape = RoundedCornerShape(32.dp),
-			modifier = Modifier.fillMaxWidth(),
+			modifier = Modifier
+				.widthIn(max = 440.dp)
+				.fillMaxWidth(),
 		) {
 			Row(
 				modifier = Modifier
@@ -300,7 +332,7 @@ fun FloatingGlassNavBar(
 
 @Composable
 private fun NavBarItem(icon: ImageVector, label: String, selected: Boolean, onClick: () -> Unit,) {
-	val tint = if (selected) FocusPrimary else Color.White.copy(alpha = 0.45f)
+	val tint = if (selected) LocalPalette.current.focusPrimary else Color.White.copy(alpha = 0.45f)
 
 	Column(
 		horizontalAlignment = Alignment.CenterHorizontally,

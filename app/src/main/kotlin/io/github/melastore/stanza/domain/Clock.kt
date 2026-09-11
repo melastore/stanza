@@ -1,12 +1,9 @@
 package io.github.melastore.stanza.domain
 
-/**
- * Abstraction over system time so [TimerEngine] can be tested deterministically with a fake clock.
- */
+// Behind an interface so tests can use a fake clock.
 interface Clock {
-	/** Milliseconds since boot, including deep sleep (SystemClock.elapsedRealtime()). */
+	// SystemClock.elapsedRealtime(): ms since boot, keeps counting in deep sleep.
 	fun elapsedRealtime(): Long
 
-	/** Current wall-clock epoch milliseconds (System.currentTimeMillis()). */
 	fun currentTimeMillis(): Long
 }

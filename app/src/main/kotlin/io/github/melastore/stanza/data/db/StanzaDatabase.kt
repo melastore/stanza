@@ -32,12 +32,7 @@ data class TaskRecord(
 	val createdAt: Long,
 )
 
-/**
- * Lean, zero-boilerplate SQLite database for Stanza.
- *
- * Avoids heavy compiler plugins while offering direct indexed SQLite performance for
- * GitHub-style heatmap aggregations and streak queries across thousands of sessions.
- */
+// Hand-rolled SQLiteOpenHelper. Sessions are indexed by day for the heatmap and streak queries.
 class StanzaDatabase(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, null, DATABASE_VERSION) {
 
 	private val _tasksFlow = MutableStateFlow<List<TaskRecord>>(emptyList())
@@ -78,7 +73,6 @@ class StanzaDatabase(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
 	}
 
 	override fun onUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) {
-		// Version 1 is the baseline
 	}
 
 	suspend fun insertSession(phase: Phase, durationMinutes: Int, timestamp: Long, taskId: Long?,): Long =
@@ -217,8 +211,6 @@ class StanzaDatabase(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
 		}
 		streak
 	}
-
-	// --- Tasks Operations ---
 
 	suspend fun insertTask(title: String, estimatedPomodoros: Int): Long = withContext(Dispatchers.IO) {
 		val values = ContentValues().apply {

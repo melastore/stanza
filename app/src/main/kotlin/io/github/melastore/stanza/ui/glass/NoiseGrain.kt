@@ -10,13 +10,9 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.PointMode
 import kotlin.random.Random
 
-/**
- * Procedural low-overhead dither noise overlay.
- * Eliminates large gradient color banding on OLED panels at ~2% alpha.
- */
+// Dither overlay. Without it the big radial gradients band badly on OLED.
 @Composable
 fun NoiseGrainOverlay(modifier: Modifier = Modifier, alpha: Float = 0.025f,) {
-	// Generate a deterministic pseudo-random point cloud once
 	val points = remember {
 		val list = ArrayList<Offset>(1200)
 		val random = Random(42)

@@ -15,10 +15,8 @@ import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.Json
 
-/**
- * Persists the active [TimerState] atomically to disk using a temp-file rename and fsync.
- * Ensures that unexpected power loss, process death, or system restart never corrupts timer state.
- */
+// Write is temp file -> fsync -> rename, with a backup generation, so a kill mid-write can't
+// leave a half-written state behind.
 class TimerStateStore(context: Context) {
 
 	private val file = File(context.filesDir, "timer_state.json")
@@ -53,7 +51,6 @@ class TimerStateStore(context: Context) {
 		val serialized = json.encodeToString(TimerState.serializer(), state)
 		temp.writeSynced(serialized)
 
-		// Backup previous valid generation if present
 		parse(file)?.let {
 			backup.writeSynced(json.encodeToString(TimerState.serializer(), it))
 		}

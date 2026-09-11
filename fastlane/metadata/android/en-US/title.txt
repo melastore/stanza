@@ -1,1 +1,1 @@
-Stanza
+Stanza: Pomodoro Timer

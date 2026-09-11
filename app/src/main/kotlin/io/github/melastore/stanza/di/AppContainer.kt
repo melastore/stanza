@@ -11,12 +11,10 @@ import io.github.melastore.stanza.data.repository.TaskRepository
 import io.github.melastore.stanza.domain.Clock
 import io.github.melastore.stanza.domain.SystemClockImpl
 import io.github.melastore.stanza.service.AlarmScheduler
+import io.github.melastore.stanza.service.SessionFeedback
 import io.github.melastore.stanza.service.TimerController
 
-/**
- * Manual, lean dependency container for Stanza.
- * Zero reflection, zero annotation processing, fast builds.
- */
+// Manual DI, the graph is too small for Hilt to be worth it.
 class AppContainer(context: Context) {
 	val clock: Clock = SystemClockImpl
 	val database = StanzaDatabase(context)
@@ -25,6 +23,7 @@ class AppContainer(context: Context) {
 	val settingsStore = SettingsStore(context)
 	val stateStore = TimerStateStore(context)
 	val alarmScheduler = AlarmScheduler(context)
+	private val sessionFeedback = SessionFeedback(context)
 
 	val timerController = TimerController(
 		context = context,
@@ -33,6 +32,7 @@ class AppContainer(context: Context) {
 		sessionRepository = sessionRepository,
 		taskRepository = taskRepository,
 		alarmScheduler = alarmScheduler,
+		feedback = sessionFeedback,
 		clock = clock,
 	)
 }

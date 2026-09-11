@@ -3,55 +3,51 @@
 [![License: GPL-3.0-or-later](https://img.shields.io/badge/license-GPL--3.0--or--later-blue.svg)](LICENSE)
 [![Android 12+](https://img.shields.io/badge/Android-12%2B-brightgreen.svg)](#install)
 
-**A battery-respecting, frosted glass Pomodoro and interval timer for Android.**
+A Pomodoro and interval timer for Android with a frosted glass look.
 
-In Italian, *stanza* means a room or stopping place—and in verse, a metered unit of rhythm. Stanza treats focused sessions as quiet rooms of time rather than an anxious ticking clock.
+Each focus session is called a stanza. A cycle is a few stanzas with short breaks between
+them and a long break at the end.
 
-It is built with zero-compromise timer correctness, native notification chronometer rendering (zero battery-draining wakeups), and a layered glassmorphic design system.
+## Features
 
----
+- Focus, short break and long break timers with adjustable lengths and stanzas per cycle
+- Optional auto-start for breaks and the next focus session
+- Countdown in the notification and on the lock screen
+- Keeps time through reboots, Doze and the app being swiped away
+- Tasks with estimated and completed stanzas
+- Stats: daily and weekly totals, streaks, and a yearly heatmap
+- Several timer layouts and colour themes, including a custom one
+- Quick Settings tile and a home screen widget
+- "Reduce Transparency" setting for slower phones or if you find the blur hard to read
+- No accounts, no internet, no tracking, no ads
 
-## Highlights
+## How the timer works
 
-- **Zero-Wakeup Timer Authority**: A ticking coroutine is never the source of truth. State is anchored to `SystemClock.elapsedRealtime()` and `System.currentTimeMillis()`. Reboots, app swipe-away, Doze, and process death are non-events.
-- **Hardware Chronometer**: The ongoing notification uses Android's native `setUsesChronometer(true)` with countdown. The system UI renders the live second-by-second countdown on the lock screen and status bar without waking the CPU.
-- **Unyielding Alarms**: `AlarmManager.setExactAndAllowWhileIdle` fires phase transitions on time, even under aggressive OEM task killers or deep battery optimization.
-- **Glass UI System**: Real backdrop blur via [Haze](https://github.com/chrisbanes/haze), animated drifting mesh gradients, a 1 dp specular gradient border, and an OLED dither noise grain overlay.
-- **Accessibility & Low-End Escape Hatch**: A "Reduce Transparency" toggle instantly replaces all glass blurs with solid, high-contrast dark tonal surfaces.
-- **Pure Kotlin Domain**: `TimerEngine` has zero Android imports, operating as a deterministic pure reducer tested across all boundary conditions.
-- **Insights & Heatmap**: GitHub-style annual focus rhythm heatmap, daily/weekly metrics, and streak calculations powered by indexed SQLite queries.
-- **No bloat, no tracking, no ads**: No user accounts, no cloud sync, no analytics, no subscription prompts.
+The app doesn't count seconds itself. When a session starts it saves the end time, both as
+`elapsedRealtime` and as wall-clock time, and sets an exact alarm with
+`setExactAndAllowWhileIdle`. The notification uses Android's built-in chronometer, so the
+system draws the countdown and the phone doesn't wake up every second.
 
----
+After a reboot, the saved wall-clock end time is used to either finish the session or pick it
+back up where it was.
 
 ## Install
 
-Requires **Android 12 (API 31)** or newer (for hardware-accelerated `RenderEffect` backdrop blur).
+Needs Android 12 (API 31) or newer, because the blur uses `RenderEffect`.
 
-Available via GitHub Releases and F-Droid.
+APKs are on the [releases page](https://github.com/melastore/stanza/releases).
 
----
-
-## Architecture
-
-Single-module clean architecture with manual container DI:
+## Code layout
 
 ```
 app/src/main/kotlin/io/github/melastore/stanza/
-├── StanzaApp.kt                // Application entry point
-├── di/
-│   └── AppContainer.kt         // Manual constructor DI (No Hilt/Koin)
-├── domain/                     // Pure Kotlin: Clock, Phase, TimerEngine, TimerState
-├── data/
-│   ├── db/                     // StanzaDatabase SQLite helper with WAL & indexing
-│   ├── datastore/              // DataStore preferences & atomic state persistence
-│   └── repository/             // SessionRepository & TaskRepository
-├── service/                    // TimerService (specialUse), AlarmScheduler, NotificationFactory
-├── widget/                     // StanzaTileService (Quick Settings) & Glance widget
-└── ui/                         // Compose: theme, glass/ (GlassSurface, MeshGradient), screens
+├── di/          manual DI (AppContainer)
+├── domain/      TimerEngine and timer state, no Android imports
+├── data/        SQLite, DataStore, repositories
+├── service/     foreground service, alarms, notifications
+├── widget/      Quick Settings tile, Glance widget
+└── ui/          Compose screens, theme, glass effects
 ```
-
----
 
 ## Building
 
@@ -59,10 +55,9 @@ app/src/main/kotlin/io/github/melastore/stanza/
 git clone https://github.com/melastore/stanza.git
 cd stanza
 ./gradlew test assembleDebug
-```
-
-Run code formatting and verification:
-
-```sh
 ./gradlew spotlessCheck
 ```
+
+## License
+
+GPL-3.0-or-later

@@ -4,6 +4,7 @@ import android.app.NotificationManager
 import android.content.Context
 import io.github.melastore.stanza.data.datastore.SettingsStore
 import io.github.melastore.stanza.data.datastore.TimerStateStore
+import io.github.melastore.stanza.data.datastore.UserPreferences
 import io.github.melastore.stanza.data.repository.SessionRepository
 import io.github.melastore.stanza.data.repository.TaskRepository
 import io.github.melastore.stanza.domain.Clock
@@ -27,6 +28,7 @@ class TimerController(
 	private val sessionRepository: SessionRepository,
 	private val taskRepository: TaskRepository,
 	private val alarmScheduler: AlarmScheduler,
+	private val feedback: SessionFeedback,
 	private val clock: Clock,
 	private val scope: CoroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate),
 ) {
@@ -36,17 +38,21 @@ class TimerController(
 	fun dispatch(intent: TimerIntent) {
 		scope.launch {
 			mutex.withLock {
-				val config = settingsStore.preferences.first().config
+				val preferences = settingsStore.preferences.first()
 				val currentState = stateStore.get()
-				val transition = TimerEngine.reduce(currentState, intent, config, clock)
+				val transition = TimerEngine.reduce(currentState, intent, preferences.config, clock)
 
 				stateStore.update { transition.state }
-				executeSideEffects(transition.effects, transition.state)
+				executeSideEffects(transition.effects, transition.state, preferences)
 			}
 		}
 	}
 
-	private suspend fun executeSideEffects(effects: List<TimerSideEffect>, state: TimerState) {
+	private suspend fun executeSideEffects(
+		effects: List<TimerSideEffect>,
+		state: TimerState,
+		preferences: UserPreferences,
+	) {
 		for (effect in effects) {
 			when (effect) {
 				is TimerSideEffect.ArmAlarm -> {
@@ -72,6 +78,11 @@ class TimerController(
 				}
 
 				is TimerSideEffect.SessionFinishedAlert -> {
+					feedback.play(
+						completedPhase = effect.completedPhase,
+						sound = preferences.soundEnabled,
+						vibration = preferences.vibrationEnabled,
+					)
 					val notification = NotificationFactory.buildAlertNotification(
 						context,
 						effect.completedPhase,
