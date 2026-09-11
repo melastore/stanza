@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+	<string name="app_name">Stanza</string>
+	<string name="tile_label">Focus Stanza</string>
+	<string name="channel_ongoing_name">Ongoing Timer</string>
+	<string name="channel_ongoing_description">Shows live countdown and controls for your current session</string>
+	<string name="channel_alerts_name">Session Alerts</string>
+	<string name="channel_alerts_description">Alerts when a focus or break session finishes</string>
+</resources>

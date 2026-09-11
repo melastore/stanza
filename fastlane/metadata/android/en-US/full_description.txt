@@ -1,0 +1,13 @@
+Stanza is a battery-respecting, frosted glass Pomodoro and interval focus timer for Android.
+
+In Italian, stanza means a room or stopping place—and in verse, a metered unit of rhythm. Stanza treats focused sessions as quiet rooms of time rather than an anxious ticking clock.
+
+Features:
+• Zero-Wakeup Countdown: Uses Android's native notification chronometer to display live countdowns on your lock screen without waking the CPU.
+• Hardware-Reliable Alarms: Powered by exact alarms that trigger seamlessly across Doze mode and background restrictions.
+• Reboot Recovery: Dual realtime and wall-clock state tracking ensures timer continuity across unexpected reboots or app restarts.
+• Glassmorphic Design: 4-layer glass stack featuring animated drifting mesh gradients, real backdrop blur via Haze, 1 dp specular gradient borders, and OLED dither noise.
+• Task Management: Plan your sessions with estimated and completed stanza tallies per task.
+• Annual Insights & Heatmap: Track your focus rhythm with GitHub-style annual heatmaps, daily/weekly stats, and streak tracking.
+• Low-End & Accessibility Mode: "Reduce Transparency" toggle replaces backdrop blurs with crisp, high-contrast dark tonal surfaces.
+• Private & Bloat-Free: No accounts, no cloud sync, no tracking, no ads. Fully open source.

@@ -1,0 +1,12 @@
+*.iml
+.gradle/
+.idea/
+.kotlin/
+build/
+local.properties
+keystore.properties
+*.jks
+*.keystore
+
+# Local release keystore, kept out of the repository entirely.
+signing/
