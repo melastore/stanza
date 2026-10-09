@@ -9,8 +9,11 @@
 	<uses-permission android:name="android.permission.USE_EXACT_ALARM" />
 	<uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
 	<uses-permission android:name="android.permission.VIBRATE" />
-	<uses-permission android:name="android.permission.ACCESS_NOTIFICATION_POLICY" />
 	<uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS" />
+	<!-- Merged in from WorkManager (via Glance); no work uses network constraints -->
+	<uses-permission
+		android:name="android.permission.ACCESS_NETWORK_STATE"
+		tools:node="remove" />
 
 	<application
 		android:name=".StanzaApp"

@@ -22,7 +22,6 @@ private val Context.dataStore: DataStore<Preferences> by preferencesDataStore(na
 data class UserPreferences(
 	val config: TimerConfig = TimerConfig(),
 	val reduceTransparency: Boolean = false,
-	val dndEnabled: Boolean = false,
 	val soundEnabled: Boolean = true,
 	val vibrationEnabled: Boolean = true,
 	val keepScreenOn: Boolean = false,
@@ -44,7 +43,6 @@ class SettingsStore(private val context: Context) {
 		val AUTO_START_BREAKS = booleanPreferencesKey("auto_start_breaks")
 		val AUTO_START_FOCUS = booleanPreferencesKey("auto_start_focus")
 		val REDUCE_TRANSPARENCY = booleanPreferencesKey("reduce_transparency")
-		val DND_ENABLED = booleanPreferencesKey("dnd_enabled")
 		val SOUND_ENABLED = booleanPreferencesKey("sound_enabled")
 		val VIBRATION_ENABLED = booleanPreferencesKey("vibration_enabled")
 		val KEEP_SCREEN_ON = booleanPreferencesKey("keep_screen_on")
@@ -66,7 +64,6 @@ class SettingsStore(private val context: Context) {
 		UserPreferences(
 			config = config,
 			reduceTransparency = prefs[Keys.REDUCE_TRANSPARENCY] ?: false,
-			dndEnabled = prefs[Keys.DND_ENABLED] ?: false,
 			soundEnabled = prefs[Keys.SOUND_ENABLED] ?: true,
 			vibrationEnabled = prefs[Keys.VIBRATION_ENABLED] ?: true,
 			keepScreenOn = prefs[Keys.KEEP_SCREEN_ON] ?: false,
@@ -105,10 +102,6 @@ class SettingsStore(private val context: Context) {
 
 	suspend fun setReduceTransparency(enabled: Boolean) {
 		context.dataStore.edit { it[Keys.REDUCE_TRANSPARENCY] = enabled }
-	}
-
-	suspend fun setDndEnabled(enabled: Boolean) {
-		context.dataStore.edit { it[Keys.DND_ENABLED] = enabled }
 	}
 
 	suspend fun setSoundEnabled(enabled: Boolean) {

@@ -28,8 +28,8 @@ android {
 		applicationId = "io.github.melastore.stanza"
 		minSdk = 31
 		targetSdk = 37
-		versionName = "0.1.1"
-		versionCode = 2
+		versionName = "0.1.2"
+		versionCode = 3
 		testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 	}
 

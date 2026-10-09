@@ -1,0 +1,1 @@
+Removed two permissions the app did not use: Do Not Disturb access and network state.
